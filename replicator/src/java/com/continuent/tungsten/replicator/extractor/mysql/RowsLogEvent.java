@@ -1066,6 +1066,50 @@ public abstract class RowsLogEvent extends LogEvent
                     spec.setType(java.sql.Types.VARCHAR);
                 return length;
 
+            case MysqlBinlog.MYSQL_TYPE_GEOMETRY :
+                /*
+                 * Handle like BLOB
+                 */
+                int geo_size = 0;
+                switch (meta)
+                {
+                    case 1 :
+                        length = GeneralConversion
+                                .unsignedByteToInt(row[rowPos]);
+                        geo_size = 1;
+                        break;
+                    case 2 :
+                        length = LittleEndianConversion.convert2BytesToInt(row,
+                                rowPos);
+                        geo_size = 2;
+                        break;
+                    case 3 :
+                        length = LittleEndianConversion.convert3BytesToInt(row,
+                                rowPos);
+                        geo_size = 3;
+                        break;
+                    case 4 :
+                        length = (int) LittleEndianConversion
+                                .convert4BytesToLong(row, rowPos);
+                        geo_size = 4;
+                        break;
+                    default :
+                        logger.error("Unknown GEOMETRY packlen= " + length);
+                        return 0;
+                }
+                try
+                {
+                    SerialBlob geo = DatabaseHelper.getSafeBlob(row, rowPos
+                            + geo_size, length);
+                    value.setValue(geo);
+                }
+                catch (SQLException e)
+                {
+                    throw new MySQLExtractException(
+                            "Failure while extracting GEOMETRY", e);
+                }
+                return length + geo_size;
+
             default :
             {
                 throw new MySQLExtractException("unknown data type " + type);
