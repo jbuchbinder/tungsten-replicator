@@ -61,7 +61,7 @@ else
    syspass=
 fi
 
-SYSDBA="$sys_user/$syspass"
+SYSDBA="$sys_user/$syspass as sysdba"
 
 echo "SYSDBA=$SYSDBA";
 
