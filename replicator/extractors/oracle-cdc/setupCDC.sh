@@ -25,6 +25,8 @@ then
    cdc_type="SYNC_SOURCE"
 fi
 
+echo "1";
+
 # Checking that delete_user is replaced by delete_publisher and delete_subscriber
 if [ -z "${delete_publisher+undefined}" ] || [ -z "${delete_subscriber+undefined}" ] ; 
 then
@@ -40,6 +42,8 @@ then
       exit 1;
    fi
 fi
+
+echo "2";
 
 DEFAULT_CHANGE_SET="TUNGSTEN_CHANGE_SET"
 CHANGE_SET=${DEFAULT_CHANGE_SET}
@@ -60,6 +64,8 @@ fi
 SYSDBA="$sys_user/$syspass AS SYSDBA"
 
 oracle_version="`sqlplus -S ${SYSDBA} @get_oracle_version`"
+
+echo "3";
 
 # Oracle Change Data Capture is not included in Oracle Database 12c
 if [ $oracle_version -ge 12 ]
