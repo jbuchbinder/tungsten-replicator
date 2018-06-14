@@ -6,7 +6,7 @@ set serveroutput on
 
 DECLARE
 --For DEBUG purpose, set debug to true
-debug boolean := false;
+debug boolean := true;
 
 v_version varchar2(17);
 i_version number;
