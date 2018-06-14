@@ -70,7 +70,9 @@ SYSDBA="$sys_user/$syspass AS SYSDBA"
 
 echo "SYSDBA=$SYSDBA";
 
-echo sqlplus -S ${SYSDBA} @get_oracle_version;
+sqlplus -S ${SYSDBA} @get_oracle_version;1
+
+EXIT 1;
 #echo "oracle_version=$oracle_version";
 
 #oracle_version="`sqlplus -S ${SYSDBA} @get_oracle_version`"
