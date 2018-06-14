@@ -50,6 +50,8 @@ CHANGE_SET=${DEFAULT_CHANGE_SET}
 [ -z "${service}" ] && echo "ERROR: Service must be defined in ${CNF_FILE}" && exit 1
 [ ! -z "${service}" ] && CHANGE_SET="TUNGSTEN_CS_${service}"
 
+echo "2.1";
+
 if [ -n "${sys_user}" ]
 then
    if [ -n "${sys_pass}" ]
@@ -61,6 +63,9 @@ then
 else
    syspass=
 fi
+
+echo "2.2";
+
 SYSDBA="$sys_user/$syspass AS SYSDBA"
 
 oracle_version="`sqlplus -S ${SYSDBA} @get_oracle_version`"
