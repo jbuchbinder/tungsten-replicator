@@ -1,8 +1,8 @@
 --For DEBUG purpose, comment the following 3 lines and uncomment the 4th one
-set feedback off
-set echo off
-set term off
---set serveroutput on
+--set feedback off
+--set echo off
+--set term off
+set serveroutput on
 
 DECLARE
 v_version varchar2(17);
