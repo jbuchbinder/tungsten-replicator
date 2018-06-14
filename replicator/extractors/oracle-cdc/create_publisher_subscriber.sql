@@ -103,7 +103,7 @@ IF debug THEN DBMS_OUTPUT.PUT_LINE ('tableCount=' || tableCount); END IF;
 
 IF tableCount > 0 THEN
    DECLARE
-      CURSOR C IS SELECT table_name FROM ALL_TABLES where owner=v_user AND table_name in (SELECT tableName FROM SYS.tungsten_load);
+      CURSOR C IS SELECT * FROM (SELECT table_name FROM ALL_TABLES where owner=v_user AND table_name in (SELECT tableName FROM SYS.tungsten_load)) A WHERE rownum <= 10;
    BEGIN
       OPEN C;
       LOOP
@@ -131,7 +131,7 @@ IF tableCount > 0 THEN
    END;
 ELSE
    DECLARE
-      CURSOR C IS SELECT table_name FROM ALL_TABLES where owner=v_user;
+      CURSOR C IS SELECT * FROM (SELECT table_name FROM ALL_TABLES where owner=v_user) A WHERE rownum <= 10;
    BEGIN
       OPEN C;
       LOOP
