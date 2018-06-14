@@ -71,6 +71,8 @@ IF v_tmp_user IS NULL THEN
 
 END IF;
 
+IF debug THEN DBMS_OUTPUT.PUT_LINE ('Finished Creating user ' || v_pub_user); END IF;
+
 v_tmp_user := NULL;
 BEGIN
 SELECT USERNAME into v_tmp_user from ALL_USERS where USERNAME = UPPER(v_tungsten_user);
