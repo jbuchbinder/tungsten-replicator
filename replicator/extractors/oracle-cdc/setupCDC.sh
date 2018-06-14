@@ -66,18 +66,13 @@ fi
 
 echo "2.2";
 
-SYSDBA="$sys_user/$syspass AS SYSDBA"
+SYSDBA="$sys_user/$syspass"
 
 echo "SYSDBA=$SYSDBA";
 
-sqlplus -S ${SYSDBA};# @get_oracle_version;
+oracle_version="`sqlplus -S ${SYSDBA} @get_oracle_version`"
 
-exit 1;
-#echo "oracle_version=$oracle_version";
-
-#oracle_version="`sqlplus -S ${SYSDBA} @get_oracle_version`"
-
-#echo "oracle_version=$oracle_version";
+echo "oracle_version=$oracle_version";
 
 echo "3";
 
