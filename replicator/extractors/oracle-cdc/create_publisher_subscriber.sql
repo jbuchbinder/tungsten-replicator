@@ -97,6 +97,8 @@ IF not v_sync THEN
    DBMS_CAPTURE_ADM.BUILD();
 END IF;
 
+IF debug THEN DBMS_OUTPUT.PUT_LINE ('tableCount=' || tableCount); END IF;
+
 IF tableCount > 0 THEN
    DECLARE
       CURSOR C IS SELECT table_name FROM ALL_TABLES where owner=v_user AND table_name in (SELECT tableName FROM SYS.tungsten_load);
