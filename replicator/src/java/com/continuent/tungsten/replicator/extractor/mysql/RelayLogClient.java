@@ -482,42 +482,70 @@ public class RelayLogClient
                     + length + " type=" + type);
         }
 
-        // Switch on the type.
-        switch (type)
+        // Wrap with a try/catch to ensure adequate closing of connection and
+        // open file handles
+        try 
         {
-            case 0 :
-                // Indicates the next event. (MySQL dev wiki doc on connection
-                // protocol are wrong or misleading.)
-                try
-                {
-                    processBinlogEvent(packet);
-                }
-                catch (IOException e)
-                {
-                    throw new ExtractorException("Error processing binlog: "
-                            + e.getMessage(), e);
-                }
-                break;
-            case 0xFE :
-                // Indicates end of stream. It's not clear when this would
-                // be sent.
-                throw new ExtractorException("EOF packet received");
-            case 0xFF :
-                // Indicates an error, for example trying to restart at wrong
-                // binlog offset.
-                int errno = packet.getShort();
-                packet.getByte();
-                String sqlState = packet.getString(5);
-                String errMsg = packet.getString();
+            // Switch on the type.
+            switch (type)
+            {
+                case 0 :
+                    // OK_Packet. Indicates successful completion of query.
+                    // as of 5.7.5, also indicates EOF
+                    try
+                    {
+                        processBinlogEvent(packet);
+                    }
+                    catch (IOException e)
+                    {
+                        throw new ExtractorException("Error processing binlog: "
+                                + e.getMessage(), e);
+                    }
+                    break;
+                case 0xFE :
+                    /**
+                    * From https://dev.mysql.com/doc/internals/en/packet-EOF_Packet.html:
+                    *
+                    * "In the MySQL client/server protocol, EOF and OK packets serve the same purpose, 
+                    * to mark the end of a query execution result"
+                    * 
+                    * and
+                    *
+                    * "The EOF packet may appear in places where a 
+                    *  Protocol::LengthEncodedInteger may appear"
+                    *
+                    * the latter is unexpected, but checked for just in case
+                    */
+                    if (length < 9) {
+                      disconnect();
+                      return false;
+                    } else {
+                      throw new ExtractorException("Recieved Length Encoded Integer Packet, unexpected");
+                    }
+                case 0xFF :
+                    // Indicates an error, for example trying to restart at wrong
+                    // binlog offset.
+                    int errno = packet.getShort();
+                    packet.getByte();
+                    String sqlState = packet.getString(5);
+                    String errMsg = packet.getString();
 
-                String msg = "Error packet received: errno=" + errno
-                        + " sqlstate=" + sqlState + " error=" + errMsg;
-                throw new ExtractorException(msg);
-            default :
-                // Should not happen.
-                throw new ExtractorException(
-                        "Unexpected response while fetching binlog data: packet="
-                                + packet.toString());
+                    String msg = "Error packet received: errno=" + errno
+                            + " sqlstate=" + sqlState + " error=" + errMsg;
+                    throw new ExtractorException(msg);
+                default :
+                    // Should not happen.
+                    throw new ExtractorException(
+                            "Unexpected response while fetching binlog data: packet="
+                                    + packet.toString());
+            }
+        } 
+        catch (ExtractorException unexpected) 
+        {
+
+          disconnect(); // always clean up
+
+          throw unexpected;
         }
         return true;
     }
