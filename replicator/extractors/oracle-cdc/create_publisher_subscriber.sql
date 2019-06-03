@@ -6,7 +6,7 @@ set serveroutput on
 
 DECLARE
 --For DEBUG purpose, set debug to true
-debug boolean := false;
+debug boolean := true;
 
 v_version varchar2(17);
 i_version number;
@@ -71,6 +71,8 @@ IF v_tmp_user IS NULL THEN
 
 END IF;
 
+IF debug THEN DBMS_OUTPUT.PUT_LINE ('Finished Creating user ' || v_pub_user); END IF;
+
 v_tmp_user := NULL;
 BEGIN
 SELECT USERNAME into v_tmp_user from ALL_USERS where USERNAME = UPPER(v_tungsten_user);
@@ -97,9 +99,11 @@ IF not v_sync THEN
    DBMS_CAPTURE_ADM.BUILD();
 END IF;
 
+IF debug THEN DBMS_OUTPUT.PUT_LINE ('tableCount=' || tableCount); END IF;
+
 IF tableCount > 0 THEN
    DECLARE
-      CURSOR C IS SELECT table_name FROM ALL_TABLES where owner=v_user AND table_name in (SELECT tableName FROM SYS.tungsten_load);
+      CURSOR C IS SELECT * FROM (SELECT table_name FROM ALL_TABLES where owner=v_user AND table_name in (SELECT tableName FROM SYS.tungsten_load)) A WHERE rownum <= 10;
    BEGIN
       OPEN C;
       LOOP
@@ -127,7 +131,7 @@ IF tableCount > 0 THEN
    END;
 ELSE
    DECLARE
-      CURSOR C IS SELECT table_name FROM ALL_TABLES where owner=v_user;
+      CURSOR C IS SELECT * FROM (SELECT table_name FROM ALL_TABLES where owner=v_user) A WHERE rownum <= 10;
    BEGIN
       OPEN C;
       LOOP

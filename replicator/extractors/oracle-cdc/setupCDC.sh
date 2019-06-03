@@ -25,6 +25,7 @@ then
    cdc_type="SYNC_SOURCE"
 fi
 
+
 # Checking that delete_user is replaced by delete_publisher and delete_subscriber
 if [ -z "${delete_publisher+undefined}" ] || [ -z "${delete_subscriber+undefined}" ] ; 
 then
@@ -41,10 +42,12 @@ then
    fi
 fi
 
+
 DEFAULT_CHANGE_SET="TUNGSTEN_CHANGE_SET"
 CHANGE_SET=${DEFAULT_CHANGE_SET}
 [ -z "${service}" ] && echo "ERROR: Service must be defined in ${CNF_FILE}" && exit 1
 [ ! -z "${service}" ] && CHANGE_SET="TUNGSTEN_CS_${service}"
+
 
 if [ -n "${sys_user}" ]
 then
@@ -57,9 +60,14 @@ then
 else
    syspass=
 fi
-SYSDBA="$sys_user/$syspass AS SYSDBA"
+
+SYSDBA="$sys_user/$syspass as sysdba"
+
+echo "SYSDBA=$SYSDBA";
 
 oracle_version="`sqlplus -S ${SYSDBA} @get_oracle_version`"
+
+echo "oracle_version=$oracle_version";
 
 # Oracle Change Data Capture is not included in Oracle Database 12c
 if [ $oracle_version -ge 12 ]
