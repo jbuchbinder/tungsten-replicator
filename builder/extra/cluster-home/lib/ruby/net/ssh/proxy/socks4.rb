@@ -17,7 +17,6 @@ module Net
       #     ...
       #   end
       class SOCKS4
-
         # The SOCKS protocol version used by this class
         VERSION = 4
 
@@ -47,8 +46,9 @@ module Net
 
         # Return a new socket connected to the given host and port via the
         # proxy that was requested when the socket factory was instantiated.
-        def open(host, port)
-          socket = TCPSocket.new(proxy_host, proxy_port)
+        def open(host, port, connection_options)
+          socket = Socket.tcp(proxy_host, proxy_port, nil, nil,
+                              connect_timeout: connection_options[:timeout])
           ip_addr = IPAddr.new(Resolv.getaddress(host))
           
           packet = [VERSION, CONNECT, port.to_i, ip_addr.to_i, options[:user]].pack("CCnNZ*")
@@ -62,7 +62,6 @@ module Net
 
           return socket
         end
-
       end
 
     end

@@ -62,8 +62,9 @@ module Net
 
         # Return a new socket connected to the given host and port via the
         # proxy that was requested when the socket factory was instantiated.
-        def open(host, port)
-          socket = TCPSocket.new(proxy_host, proxy_port)
+        def open(host, port, connection_options)
+          socket = Socket.tcp(proxy_host, proxy_port, nil, nil,
+                              connect_timeout: connection_options[:timeout])
 
           methods = [METHOD_NO_AUTH]
           methods << METHOD_PASSWD if options[:user]
@@ -100,7 +101,7 @@ module Net
           address_type = socket.recv(1).getbyte(0)
           case address_type
           when 1
-            socket.recv(4)  # get four bytes for IPv4 address
+            socket.recv(4) # get four bytes for IPv4 address
           when 3
             len = socket.recv(1).getbyte(0)
             hostname = socket.recv(len)
@@ -108,7 +109,7 @@ module Net
             ipv6addr hostname = socket.recv(16)
           else
             socket.close
-            raise ConnectionError, "Illegal response type"
+            raise ConnectError, "Illegal response type"
           end
           portnum = socket.recv(2)
           
@@ -122,19 +123,19 @@ module Net
 
         private
 
-          # Simple username/password negotiation with the SOCKS5 server.
-          def negotiate_password(socket)
-            packet = [0x01, options[:user].length, options[:user],
-              options[:password].length, options[:password]].pack("CCA*CA*")
-            socket.send packet, 0
+        # Simple username/password negotiation with the SOCKS5 server.
+        def negotiate_password(socket)
+          packet = [0x01, options[:user].length, options[:user],
+                    options[:password].length, options[:password]].pack("CCA*CA*")
+          socket.send packet, 0
 
-            version, status = socket.recv(2).unpack("CC")
+          version, status = socket.recv(2).unpack("CC")
 
-            if status != SUCCESS
-              socket.close
-              raise UnauthorizedError, "could not authorize user"
-            end
+          if status != SUCCESS
+            socket.close
+            raise UnauthorizedError, "could not authorize user"
           end
+        end
       end
 
     end
